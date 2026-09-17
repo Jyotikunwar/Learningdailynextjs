@@ -1,21 +1,30 @@
+"use client";
 
+import TrekCard from "@/components/TrekCard";
 
-import Link from "next/link";
-
-import {Button} from "@/components/ui/button";
-
-export default function Home() {
-    return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-            <h1 className="text-3xl  font-bold ">Welcome to the Home Page</h1>
-            <p className="text">Please login or register to continue.</p>
-              <Button>
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button variant="outline">
-                <Link href="/register">Register</Link>
-              </Button>
-          
-        </div>
-    );
+export default function Page() {
+  return (
+    <TrekCard
+      title="Everest Base Camp"
+      country="Nepal"
+      duration="14 Days"
+      route="Kathmandu to Lukla"
+      rating={4.8}
+      reviewCount={120}
+      happyTrekkers="1.2k+"
+      bestTime="Mar - May, Sep - Nov"
+      stops={[
+        { name: "Kathmandu", altitude: 1400 },
+        { name: "Lukla", altitude: 2860 },
+        { name: "Phakding", altitude: 2610 },
+        { name: "Namche Bazaar", altitude: 3440, highlighted: true },
+        { name: "Tengboche", altitude: 3860 },
+        { name: "Lobuche", altitude: 4940 },
+        { name: "Gorakshep", altitude: 5164 },
+        { name: "Everest Base Camp", altitude: 5364, highlighted: true },
+      ]}
+      weather={{ condition: "Partly Cloudy", feelsLike: 10 }}
+      onBookNow={() => alert("Booking clicked")}
+    />
+  );
 }
