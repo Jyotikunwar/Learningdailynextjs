@@ -29,7 +29,8 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            type="text"
+            type="text" 
+            className="focus:border-blue-500 focus:bg-yellow-200 focus:text-black-500 focus:outline-none "
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
