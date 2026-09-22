@@ -41,7 +41,7 @@ export interface TrekCardProps {
 function ElevationProfile({ stops }: { stops: TrekStop[] }) {
   const width = 900;
   const height = 180;
-  const paddingX = 40;
+  const paddingX = 55;
   const paddingTop = 30;
   const paddingBottom = 50;
 
@@ -63,14 +63,20 @@ function ElevationProfile({ stops }: { stops: TrekStop[] }) {
 
   const pathD = useMemo(() => {
     if (points.length < 2) return "";
-    // Smooth-ish curve through the points using quadratic midpoints
+    // Smooth natural curve through all points using Catmull-Rom -> Bezier conversion
     let d = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const midX = (prev.x + curr.x) / 2;
-      d += ` Q ${prev.x} ${prev.y} ${midX} ${(prev.y + curr.y) / 2}`;
-      d += ` Q ${curr.x} ${curr.y} ${curr.x} ${curr.y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i - 1] || points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2] || p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
     }
     return d;
   }, [points]);
@@ -90,40 +96,44 @@ function ElevationProfile({ stops }: { stops: TrekStop[] }) {
         strokeLinecap="round"
       />
 
-      {points.map((p, i) => (
-        <g key={i}>
-          {p.highlighted && (
-            <circle cx={p.x} cy={p.y} r={9} fill="rgba(34,197,94,0.25)" />
-          )}
-          <circle
-            cx={p.x}
-            cy={p.y}
-            r={p.highlighted ? 6 : 5}
-            fill={p.highlighted ? "#22c55e" : "#e2e8f0"}
-          />
+      {points.map((p, i) => {
+        const anchor =
+          i === 0 ? "start" : i === points.length - 1 ? "end" : "middle";
+        return (
+          <g key={i}>
+            {p.highlighted && (
+              <circle cx={p.x} cy={p.y} r={9} fill="rgba(34,197,94,0.25)" />
+            )}
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={p.highlighted ? 6 : 5}
+              fill={p.highlighted ? "#22c55e" : "#e2e8f0"}
+            />
 
-          <text
-            x={p.x}
-            y={height - paddingBottom + 22}
-            textAnchor="middle"
-            className={
-              p.highlighted
-                ? "fill-green-400 text-[13px] font-semibold"
-                : "fill-slate-100 text-[13px] font-semibold"
-            }
-          >
-            {p.name}
-          </text>
-          <text
-            x={p.x}
-            y={height - paddingBottom + 40}
-            textAnchor="middle"
-            className="fill-slate-400 text-[12px]"
-          >
-            {p.altitude.toLocaleString()}m
-          </text>
-        </g>
-      ))}
+            <text
+              x={p.x}
+              y={height - paddingBottom + 22}
+              textAnchor={anchor}
+              className={
+                p.highlighted
+                  ? "fill-green-400 text-[13px] font-semibold"
+                  : "fill-slate-100 text-[13px] font-semibold"
+              }
+            >
+              {p.name}
+            </text>
+            <text
+              x={p.x}
+              y={height - paddingBottom + 40}
+              textAnchor={anchor}
+              className="fill-slate-400 text-[12px]"
+            >
+              {p.altitude.toLocaleString()}m
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -155,8 +165,8 @@ export default function TrekCard({
   const maxAltitude = Math.max(...stops.map((s) => s.altitude));
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0e1a] p-6 flex items-center justify-center">
-      <div className="w-full max-w-6xl rounded-2xl border border-slate-800 bg-[#0d1220] p-8">
+    <div className="min-h-screen w-full bg-[#0F172A] flex items-start justify-center px-6 py-8">
+      <div className="w-full max-w-6xl p-8">
         {/* Header row */}
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
@@ -172,7 +182,7 @@ export default function TrekCard({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 h-">
+          <div className="flex items-center gap-3">
             <button
               onClick={onShare}
               className="flex items-center gap-2 rounded-xl bg-slate-800/80 px-4 py-2.5 text-sm font-medium text-slate-200 hover:bg-slate-700 transition-colors"
@@ -220,11 +230,11 @@ export default function TrekCard({
 
         {/* Main content: elevation profile + side panel */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          <div className="rounded-xl bg-[#0a0e1a] p-4">
+          <div className="rounded-xl bg-[#0a0e1a] p-4 min-h-[300px] flex flex-col justify-center">
             <ElevationProfile stops={stops} />
           </div>
 
-          <div className="rounded-xl bg-[#131a2b] p-5">
+          <div className="rounded-xl bg-[#131a2b] p-5 min-h-[300px] flex flex-col">
             <p className="text-slate-300">Location</p>
             <div className="mt-3 flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-400">
               <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
@@ -273,6 +283,7 @@ export default function TrekCard({
                 />
               </button>
             </div>
+            <div className="flex-1" />
           </div>
         </div>
       </div>
@@ -280,37 +291,3 @@ export default function TrekCard({
   );
 }
 
-// ----------------------------------------------------------------------------
-// Example usage (e.g. in app/page.tsx)
-// ----------------------------------------------------------------------------
-
-/*
-import TrekCard from "@/components/TrekCard";
-
-export default function Page() {
-  return (
-    <TrekCard
-      title="Everest Base Camp"
-      country="Nepal"
-      duration="14 Days"
-      route="Kathmandu to Lukla"
-      rating={4.8}
-      reviewCount={120}
-      happyTrekkers="1.2k+"
-      bestTime="Mar - May, Sep - Nov"
-      stops={[
-        { name: "Kathmandu", altitude: 1400 },
-        { name: "Lukla", altitude: 2860 },
-        { name: "Phakding", altitude: 2610 },
-        { name: "Namche Bazaar", altitude: 3440, highlighted: true },
-        { name: "Tengboche", altitude: 3860 },
-        { name: "Lobuche", altitude: 4940 },
-        { name: "Gorakshep", altitude: 5164 },
-        { name: "Everest Base Camp", altitude: 5364, highlighted: true },
-      ]}
-      weather={{ condition: "Partly Cloudy", feelsLike: 10 }}
-      onBookNow={() => console.log("Book now clicked")}
-    />
-  );
-}
-*/
