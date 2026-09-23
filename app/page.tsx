@@ -543,15 +543,15 @@ export default function Home() {
   const displayedStudents = getStudents();
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6">
-      <h1 className="text-3xl font-bold mb-6">
+    <div className="max-w-2xl mx-auto mt-10 p-6 bg-yellow-300">
+      <h1 className="text-3xl font-bold mb-6 text-center">
         Student CRUD Practice
       </h1>
 
       {displayedStudents.map((student) => (
         <div
           key={student.id}
-          className="border p-4 mb-4 rounded shadow"
+          className="border p-4 mb-4 rounded shadow text-red-900"
         >
           <p>
             <strong>ID:</strong> {student.id}
@@ -573,6 +573,7 @@ export default function Home() {
             <strong>Email:</strong>{" "}
             {student.email ?? "No email"}
           </p>
+          
         </div>
       ))}
     </div>
